@@ -1,0 +1,20 @@
+/*
+ Expected defines.
+
+ - EPROSIMA_RPC_LIB_NAME
+ - RPC_VERSION_MAJOR
+ - RPC_VERSION_MINOR
+*/
+
+// Undef macros
+#ifdef EPROSIMA_LIB_PREFIX
+#undef EPROSIMA_LIB_PREFIX
+#endif
+
+#ifdef EPROSIMA_RPC_LIB_NAME
+#undef EPROSIMA_RPC_LIB_NAME
+#endif
+
+#ifdef EPROSIMA_LIB_DEBUG_TAG
+#undef EPROSIMA_LIB_DEBUG_TAG
+#endif

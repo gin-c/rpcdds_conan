@@ -1,0 +1,68 @@
+<profiles>
+    <participant profile_name="participant_profile">
+        <domainId>0</domainId>
+        <rtps>
+            <name>Participant Name</name>
+            <defaultUnicastLocatorList>
+                <locator>
+                    <udpv4>
+                        <address>127.0.0.1</address>
+                    </udpv4>
+                </locator>
+            </defaultUnicastLocatorList>
+            <defaultMulticastLocatorList>
+                <!-- LOCATOR_LIST -->
+                <locator>
+                    <udpv4/>
+                </locator>
+            </defaultMulticastLocatorList>
+            <port>
+                <portBase>7400</portBase>
+            </port>
+            <builtin>
+                <metatrafficUnicastLocatorList>
+                    <locator>
+                        <udpv4>
+                            <!-- Access as physical, like UDP -->
+                            <address>127.0.0.1</address>
+                        </udpv4>
+                    </locator>
+                    <locator>
+                        <udpv6>
+                            <address>::1</address>
+                        </udpv6>
+                    </locator>
+                </metatrafficUnicastLocatorList>
+
+                <metatrafficMulticastLocatorList>
+                    <locator>
+                        <udpv4>
+                            <!-- Access as physical, like UDP -->
+                            <address>127.0.0.1</address>
+                        </udpv4>
+                    </locator>
+                    <locator>
+                        <udpv6>
+                            <address>::1</address>
+                        </udpv6>
+                    </locator>
+                </metatrafficMulticastLocatorList>
+
+                <initialPeersList>
+                    <locator>
+                        <udpv4>
+                            <!-- Access as physical, like UDP -->
+                            <address>127.0.0.1</address>
+                        </udpv4>
+                    </locator>
+                    <locator>
+                        <udpv6>
+                            <port>8844</port>
+                            <address>::1</address>
+                        </udpv6>
+                    </locator>
+                </initialPeersList>
+            </builtin>
+        </rtps>
+    </participant>
+</profiles>

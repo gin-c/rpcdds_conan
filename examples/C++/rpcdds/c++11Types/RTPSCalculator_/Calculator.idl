@@ -1,0 +1,21 @@
+enum VideoType{
+    STREAM_SYSTEM,
+    STREAM_COMMUNICATION
+};
+
+struct VideoFormat{
+    string mimeType;
+    long width;
+    long height;
+};
+
+typedef sequence<char,40960> ByteArray;
+typedef sequence<long> LongArray;
+
+interface Calculator
+{
+    boolean sendTouchEvent(in long action, in long  width, in long  height, in long  count, in LongArray trackID,in LongArray x, in LongArray y);
+    boolean sendGotoForeground();
+    notify void videoInitialized(in VideoType type,in VideoFormat videFormat);
+    notify void videoDataReceived(in VideoType type,in long size, in ByteArray byte);
+};

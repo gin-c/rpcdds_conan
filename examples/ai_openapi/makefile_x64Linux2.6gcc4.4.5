@@ -1,0 +1,89 @@
+CPP= g++
+CPPFLAGS = -c -Wall -fpic -m64 -O2 -std=c++0x
+LN= g++
+AR=ar
+LDFLAGS= -m64 -O2 -Wl,--no-as-needed
+SYSLIBS= -ldl -lnsl -lm -lpthread -lrt
+DEFINES= 
+
+INCLUDES= -I. -I$(RPCDDSHOME)/include
+
+LIBS = -L$(RPCDDSHOME)/lib -lfastcdr -lfastrtps -lrpcdds $(SYSLIBS)
+
+DIRECTORIES= output.dir output/x64Linux2.6gcc4.4.5.dir lib.dir lib/x64Linux2.6gcc4.4.5.dir bin.dir bin/x64Linux2.6gcc4.4.5.dir
+
+all: $(DIRECTORIES) AIOpenApi  AIOpenApiClient AIOpenApiClientExample AIOpenApiServer AIOpenApiServerExample
+
+
+AIOpenApi_TARGET= lib/x64Linux2.6gcc4.4.5/libAIOpenApi.so
+AIOpenApi_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libAIOpenApi.a
+AIOpenApi_CLIENT_TARGET= lib/x64Linux2.6gcc4.4.5/libAIOpenApiClient.so
+AIOpenApi_CLIENT_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libAIOpenApiClient.a
+AIOpenApi_CLIENT_EXAMPLE_TARGET= bin/x64Linux2.6gcc4.4.5/AIOpenApiClientExample
+AIOpenApi_SERVER_TARGET= lib/x64Linux2.6gcc4.4.5/libAIOpenApiServer.so
+AIOpenApi_SERVER_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libAIOpenApiServer.a
+AIOpenApi_SERVER_EXAMPLE_TARGET= bin/x64Linux2.6gcc4.4.5/AIOpenApiServerExample
+AIOpenApi_COMMON_SRC_CXXFILES = AIOpenApi.cxx \
+	AIOpenApiTopicsPlugin.cxx \
+	AIOpenApiTopics.cxx \
+	AIOpenApiDDSProtocol.cxx \
+	AIOpenApiDDSAsyncSupport.cxx
+
+AIOpenApi_COMMON_SRC_CPPFILES=
+
+AIOpenApi_CLIENTSOURCES = AIOpenApiProxy.cxx
+AIOpenApi_SERVERSOURCES = AIOpenApiServer.cxx
+AIOpenApi_COMMONOBJS    = $(AIOpenApi_COMMON_SRC_CXXFILES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o) $(AIOpenApi_COMMON_SRC_CPPFILES:%.cpp=output/x64Linux2.6gcc4.4.5/%.o)
+AIOpenApi_CLIENTOBJS    = $(AIOpenApi_CLIENTSOURCES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o)
+AIOpenApi_SERVEROBJS    = $(AIOpenApi_SERVERSOURCES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o)
+OBJS+= $(AIOpenApi_COMMONOBJS) $(AIOpenApi_CLIENTOBJS) $(AIOpenApi_SERVEROBJS)
+
+$(AIOpenApi_TARGET): $(AIOpenApi_COMMONOBJS)
+	$(LN) $(LDFLAGS) -shared -o $(AIOpenApi_TARGET) $(AIOpenApi_COMMONOBJS) -Llib/x64Linux2.6gcc4.4.5  $(LIBS)
+
+$(AIOpenApi_TARGET_Z): $(AIOpenApi_COMMONOBJS)
+	$(AR) -cru $(AIOpenApi_TARGET_Z) $(AIOpenApi_COMMONOBJS)
+$(AIOpenApi_CLIENT_TARGET): $(AIOpenApi_CLIENTOBJS)
+	$(LN) $(LDFLAGS) -shared -o $(AIOpenApi_CLIENT_TARGET) $(AIOpenApi_CLIENTOBJS) -Llib/x64Linux2.6gcc4.4.5 -lAIOpenApi $(LIBS)
+
+$(AIOpenApi_CLIENT_TARGET_Z): $(AIOpenApi_CLIENTOBJS)
+	$(AR) -cru $(AIOpenApi_CLIENT_TARGET_Z) $(AIOpenApi_CLIENTOBJS)
+	
+$(AIOpenApi_SERVER_TARGET): $(AIOpenApi_SERVEROBJS)
+	$(LN) $(LDFLAGS) -shared -o $(AIOpenApi_SERVER_TARGET) $(AIOpenApi_SERVEROBJS) -Llib/x64Linux2.6gcc4.4.5 -lAIOpenApi $(LIBS)
+
+$(AIOpenApi_SERVER_TARGET_Z): $(AIOpenApi_COMMONOBJS) $(AIOpenApi_SERVEROBJS)
+	$(AR) -cru $(AIOpenApi_SERVER_TARGET_Z) $(AIOpenApi_SERVEROBJS)
+AIOpenApiClient : $(AIOpenApi_CLIENT_TARGET) $(AIOpenApi_CLIENT_TARGET_Z)
+	
+AIOpenApiServer : $(AIOpenApi_SERVER_TARGET) $(AIOpenApi_SERVER_TARGET_Z)
+	
+$(AIOpenApi_CLIENT_EXAMPLE_TARGET): output/x64Linux2.6gcc4.4.5/AIOpenApiClientExample.o lib/x64Linux2.6gcc4.4.5/libAIOpenApiClient.a lib/x64Linux2.6gcc4.4.5/libAIOpenApi.a 
+	$(LN) $(LDFLAGS) -o $@ output/x64Linux2.6gcc4.4.5/AIOpenApiClientExample.o -Wl,-Bstatic -Llib/x64Linux2.6gcc4.4.5 -lAIOpenApiClient -lAIOpenApi  -Wl,-Bdynamic $(LIBS)
+	
+$(AIOpenApi_SERVER_EXAMPLE_TARGET): output/x64Linux2.6gcc4.4.5/AIOpenApiServerExample.o output/x64Linux2.6gcc4.4.5/AIOpenApiServerImplExample.o lib/x64Linux2.6gcc4.4.5/libAIOpenApiServer.a lib/x64Linux2.6gcc4.4.5/libAIOpenApi.a 
+	$(LN) $(LDFLAGS) -o $@ output/x64Linux2.6gcc4.4.5/AIOpenApiServerImplExample.o output/x64Linux2.6gcc4.4.5/AIOpenApiServerExample.o -Wl,-Bstatic -Llib/x64Linux2.6gcc4.4.5 -lAIOpenApiServer -lAIOpenApi  -Wl,-Bdynamic $(LIBS)
+	
+AIOpenApiClientExample : $(AIOpenApi_CLIENT_EXAMPLE_TARGET)
+	
+AIOpenApiServerExample : $(AIOpenApi_SERVER_EXAMPLE_TARGET)
+AIOpenApi: $(AIOpenApi_TARGET) $(AIOpenApi_TARGET_Z) AIOpenApiClient AIOpenApiClientExample AIOpenApiServer AIOpenApiServerExample
+
+
+output/x64Linux2.6gcc4.4.5/%.o:%.cxx
+	$(CPP) $(CPPFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+output/x64Linux2.6gcc4.4.5/%.o:%.cpp
+	$(CPP) $(CPPFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+.PHONY: AIOpenApi  AIOpenApiClient AIOpenApiClientExample AIOpenApiServer AIOpenApiServerExample
+
+clean:
+	@rm -f $(OBJS)
+
+%.dir : 
+	@echo "Checking directory $*"
+	@if [ ! -d $* ]; then \
+		echo "Making directory $*"; \
+		mkdir -p $* ; \
+	fi;

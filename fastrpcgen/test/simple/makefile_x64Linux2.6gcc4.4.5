@@ -1,0 +1,89 @@
+CPP= g++
+CPPFLAGS = -c -Wall -fpic -m64 -O2 -std=c++0x
+LN= g++
+AR=ar
+LDFLAGS= -m64 -O2 -Wl,--no-as-needed
+SYSLIBS= -ldl -lnsl -lm -lpthread -lrt
+DEFINES= 
+
+INCLUDES= -I. -I$(RPCDDSHOME)/include
+
+LIBS = -L$(RPCDDSHOME)/lib -lfastcdr -lfastrtps -lrpcdds $(SYSLIBS)
+
+DIRECTORIES= output.dir output/x64Linux2.6gcc4.4.5.dir lib.dir lib/x64Linux2.6gcc4.4.5.dir bin.dir bin/x64Linux2.6gcc4.4.5.dir
+
+all: $(DIRECTORIES) ucar  ucarClient ucarClientExample ucarServer ucarServerExample
+
+
+ucar_TARGET= lib/x64Linux2.6gcc4.4.5/libucar.so
+ucar_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libucar.a
+ucar_CLIENT_TARGET= lib/x64Linux2.6gcc4.4.5/libucarClient.so
+ucar_CLIENT_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libucarClient.a
+ucar_CLIENT_EXAMPLE_TARGET= bin/x64Linux2.6gcc4.4.5/ucarClientExample
+ucar_SERVER_TARGET= lib/x64Linux2.6gcc4.4.5/libucarServer.so
+ucar_SERVER_TARGET_Z= lib/x64Linux2.6gcc4.4.5/libucarServer.a
+ucar_SERVER_EXAMPLE_TARGET= bin/x64Linux2.6gcc4.4.5/ucarServerExample
+ucar_COMMON_SRC_CXXFILES = ucar.cxx \
+	ucarTopicsPlugin.cxx \
+	ucarTopics.cxx \
+	ucarDDSProtocol.cxx \
+	ucarDDSAsyncSupport.cxx
+
+ucar_COMMON_SRC_CPPFILES=
+
+ucar_CLIENTSOURCES = ucarProxy.cxx
+ucar_SERVERSOURCES = ucarServer.cxx
+ucar_COMMONOBJS    = $(ucar_COMMON_SRC_CXXFILES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o) $(ucar_COMMON_SRC_CPPFILES:%.cpp=output/x64Linux2.6gcc4.4.5/%.o)
+ucar_CLIENTOBJS    = $(ucar_CLIENTSOURCES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o)
+ucar_SERVEROBJS    = $(ucar_SERVERSOURCES:%.cxx=output/x64Linux2.6gcc4.4.5/%.o)
+OBJS+= $(ucar_COMMONOBJS) $(ucar_CLIENTOBJS) $(ucar_SERVEROBJS)
+
+$(ucar_TARGET): $(ucar_COMMONOBJS)
+	$(LN) $(LDFLAGS) -shared -o $(ucar_TARGET) $(ucar_COMMONOBJS) -Llib/x64Linux2.6gcc4.4.5  $(LIBS)
+
+$(ucar_TARGET_Z): $(ucar_COMMONOBJS)
+	$(AR) -cru $(ucar_TARGET_Z) $(ucar_COMMONOBJS)
+$(ucar_CLIENT_TARGET): $(ucar_CLIENTOBJS)
+	$(LN) $(LDFLAGS) -shared -o $(ucar_CLIENT_TARGET) $(ucar_CLIENTOBJS) -Llib/x64Linux2.6gcc4.4.5 -lucar $(LIBS)
+
+$(ucar_CLIENT_TARGET_Z): $(ucar_CLIENTOBJS)
+	$(AR) -cru $(ucar_CLIENT_TARGET_Z) $(ucar_CLIENTOBJS)
+	
+$(ucar_SERVER_TARGET): $(ucar_SERVEROBJS)
+	$(LN) $(LDFLAGS) -shared -o $(ucar_SERVER_TARGET) $(ucar_SERVEROBJS) -Llib/x64Linux2.6gcc4.4.5 -lucar $(LIBS)
+
+$(ucar_SERVER_TARGET_Z): $(ucar_COMMONOBJS) $(ucar_SERVEROBJS)
+	$(AR) -cru $(ucar_SERVER_TARGET_Z) $(ucar_SERVEROBJS)
+ucarClient : $(ucar_CLIENT_TARGET) $(ucar_CLIENT_TARGET_Z)
+	
+ucarServer : $(ucar_SERVER_TARGET) $(ucar_SERVER_TARGET_Z)
+	
+$(ucar_CLIENT_EXAMPLE_TARGET): output/x64Linux2.6gcc4.4.5/ucarClientExample.o lib/x64Linux2.6gcc4.4.5/libucarClient.a lib/x64Linux2.6gcc4.4.5/libucar.a 
+	$(LN) $(LDFLAGS) -o $@ output/x64Linux2.6gcc4.4.5/ucarClientExample.o -Wl,-Bstatic -Llib/x64Linux2.6gcc4.4.5 -lucarClient -lucar  -Wl,-Bdynamic $(LIBS)
+	
+$(ucar_SERVER_EXAMPLE_TARGET): output/x64Linux2.6gcc4.4.5/ucarServerExample.o output/x64Linux2.6gcc4.4.5/ucarServerImplExample.o lib/x64Linux2.6gcc4.4.5/libucarServer.a lib/x64Linux2.6gcc4.4.5/libucar.a 
+	$(LN) $(LDFLAGS) -o $@ output/x64Linux2.6gcc4.4.5/ucarServerImplExample.o output/x64Linux2.6gcc4.4.5/ucarServerExample.o -Wl,-Bstatic -Llib/x64Linux2.6gcc4.4.5 -lucarServer -lucar  -Wl,-Bdynamic $(LIBS)
+	
+ucarClientExample : $(ucar_CLIENT_EXAMPLE_TARGET)
+	
+ucarServerExample : $(ucar_SERVER_EXAMPLE_TARGET)
+ucar: $(ucar_TARGET) $(ucar_TARGET_Z) ucarClient ucarClientExample ucarServer ucarServerExample
+
+
+output/x64Linux2.6gcc4.4.5/%.o:%.cxx
+	$(CPP) $(CPPFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+output/x64Linux2.6gcc4.4.5/%.o:%.cpp
+	$(CPP) $(CPPFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+.PHONY: ucar  ucarClient ucarClientExample ucarServer ucarServerExample
+
+clean:
+	@rm -f $(OBJS)
+
+%.dir : 
+	@echo "Checking directory $*"
+	@if [ ! -d $* ]; then \
+		echo "Making directory $*"; \
+		mkdir -p $* ; \
+	fi;

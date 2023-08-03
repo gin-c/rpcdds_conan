@@ -1,0 +1,6 @@
+interface Calculator
+{
+    long addition(in long value1, in long value2);
+    long subtraction(in long value1, in long value2);
+    notify void status_notify(inout long value1);       // notify 没有返回值，参数都是inout类型
+};

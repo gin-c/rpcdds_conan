@@ -1,0 +1,7 @@
+<profiles>
+    <participant profile_name="participant_profile">
+        <rtps>
+            <name>Participant Name</name> <!-- String -->
+        </rtps>
+    </participant>
+</profiles>

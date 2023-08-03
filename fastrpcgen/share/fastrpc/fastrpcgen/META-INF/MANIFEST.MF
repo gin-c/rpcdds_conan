@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: eProsima
+Main-Class: com.eprosima.fastrpc.fastrpcgen
+

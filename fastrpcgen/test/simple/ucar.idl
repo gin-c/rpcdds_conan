@@ -1,0 +1,87 @@
+
+typedef sequence<char,10240> ByteArray;
+typedef sequence<long> LongArray;
+typedef sequence<short> ShortArray;
+
+struct VideoFormat{
+    string mimeType;
+    long width;
+    long height;
+};
+
+struct AudioFormat{
+    string mimeType;
+    long sampleRate;
+    long channelConfig;
+    long encodingFormat;
+};
+
+struct MusicInfo{
+    string artistName;
+    string albumName;
+    string coverArt;
+    string lyrics;
+    long totalTimesMs;
+    string title;
+    string authorName;
+    string writerName;
+    string composerName;
+    long playingCurrentTimeMs;
+    boolean isFavorite;
+    boolean isPlaying;
+};
+
+struct NavigationInfo{
+    boolean isNavigating;
+    sequence<char> directionIcon;
+    string distance;
+    string distanceUnit;
+    string operation;
+    string where;
+    string title1;
+    string title2;
+};
+
+struct PhoneStateInfo{
+    long phoneCs;
+    boolean isScreenLocked;
+    boolean isWechatQqCall;
+};
+
+interface UCar
+{
+    boolean sendTouchEvent(in long action, in long  width, in long  height, in long  count, in LongArray trackID,in LongArray x, in LongArray y);
+    boolean sendMicRecordData(in long i, in ShortArray shorts, in long l) ;
+    boolean sendKeyEvent(in long keyEventActionType,in long keyCodeType, in long i) ;
+    boolean sendGotoForeground();
+    boolean sendGotoBackground() ;
+    boolean sendVRCMD(in long vrcmdType, in string s) ;
+    boolean notifyIsCallHungUp() ;
+    boolean notifySwitchDayOrNight(in long dayNightMode) ;
+    boolean awakenVoiceAssistant(in ByteArray bytes, in AudioFormat audioFormat) ;
+
+    boolean presetVendorCustomFields(in ByteArray bytes) ;
+
+
+    boolean presetConnectMode(in long connectMode) ;
+
+
+    notify void videoInitialized(in long type,in VideoFormat videFormat);
+    notify void videoDataReceived(in long type,in long size, in ByteArray byte);
+
+    notify void requestGotoHUDesktop();
+
+    notify void audioStateChanged(in long var2, in AudioFormat audioFormat, in long playerState);
+    notify void audioDataReceived(in long var2, in long var3, in ByteArray  var4);
+
+
+    notify void musicInfoReceived(in MusicInfo var2);
+
+    notify void navigationInfoReceived(in NavigationInfo var2);
+
+    notify void phoneStateInfoReceived(in PhoneStateInfo var2);
+
+    notify void micRecordRequest(in AudioFormat var2, in boolean var3);
+
+    notify void userInterventionNeeded();
+};

@@ -1,0 +1,27 @@
+module AI
+{
+    struct Error{
+        string errMsg;
+        long errNo;
+    };
+
+    module OpenApi
+    {
+        interface VSP
+        {
+            boolean beginVoice();
+            boolean stopVoice();
+            notify void init(in long state);
+            notify void ready();
+            notify void vadBegin();
+            notify void vadEnd();
+            notify void error(in Error error);
+            notify void partial(in string<1024> text);
+            notify void finalResult(in string<1024> text);
+        };
+        interface Photo
+        {
+            string getPhotoInfo(in string pId);
+        };
+    };
+};

@@ -1,0 +1,52 @@
+@Annotation
+local interface RESOURCES_BASE_URI {
+	attribute string value;
+};
+
+@RESOURCES_BASE_URI("http://example.com/resources/")
+module HelloWorld
+{
+	@Annotation
+	local interface PATH {
+		attribute string value;
+	};
+
+	@Annotation
+	local interface METHOD {
+		attribute string value;
+	};
+
+	@Annotation
+	local interface BODY {
+		attribute string value;
+	};
+
+	@PATH("HelloWorld")
+	interface HelloWorldResource
+	{
+		struct EmptyHelloResponse
+		{
+			long status;
+		};
+
+		struct XMLHelloResponse
+		{
+			long status;
+			string xmlRepresentation;
+		};
+
+		union HelloResponse switch(long)
+		{
+			case 0:
+				EmptyHelloResponse emptyHelloResponse;
+			case 1:
+				XMLHelloResponse xmlHelloResponse;
+		};
+
+		@METHOD("GET")
+		HelloResponse hello(in string name);
+
+	};
+
+};
+

@@ -1,0 +1,151 @@
+group RESTProtocolHeader;
+
+main(ctx, definitions) ::= <<
+$fileHeader(ctx=ctx,  file=[ctx.filename, "RESTProtocol.h"], description=["This header file contains the declaration of the protocol used to create REST messages."])$
+
+#ifndef _$ctx.filename;format="toUpper"$_REST_PROTOCOL_H_
+#define _$ctx.filename;format="toUpper"$_REST_PROTOCOL_H_
+
+#include "$ctx.filename$Protocol.h"
+#include <$ctx.includePrefix$transports/messages/HttpMessage.h>
+#include <$ctx.includePrefix$utils/Messages.h>
+$ctx.includeDependencies : { include |#include "$include$T.h"$\n$#include "$include$.h"}; separator="\n"$
+
+#include <string>
+
+using namespace std;
+
+namespace eprosima
+{
+    namespace rpc
+    {
+        namespace protocol
+        {
+            namespace rest
+            {
+                // TODO Quitar
+                class RESTSerializer;
+            
+                /*!
+                 * @brief This class is responsible for serializing and deserializing the requests and responses of this application.
+                 *  It uses a RESTful protocol.
+		 * @ingroup $ctx.trimfilename$
+                 */
+                class RPCUSERDllExport $ctx.filename$Protocol : public eprosima::rpc::protocol::$ctx.filename$Protocol
+                {
+                    public:
+                    
+                       /*!
+                        * @brief Default constructor
+                        */
+                        $ctx.filename$Protocol();
+                        
+                       /*!
+                        * @brief Default destructor
+                        */
+                        virtual ~$ctx.filename$Protocol();
+                        
+                       /*!
+                        * @brief This method sets the transport for the communications.
+                        *        It must be an HTTP transport.
+                        * @param transport Transport to use
+                        * @return True if the assignment is successful, false otherwise
+                        */
+                        bool setTransport(eprosima::rpc::transport::Transport &transport);
+                        
+                       /*!
+                        * @brief This method does not apply to this class
+                        */
+                        bool activateInterface(const char* interfaceName);
+                        
+                       /*!
+                        * @brief This callback receives the requests and calls the specific protocol to process them
+                        * @param protocol Protocol that must process the request
+                        * @param buffer Received buffer
+                        * @param bufferLength received data length
+                        * @param bufferSize Received buffer size
+                        * @param endpoint Proxy endpoint where the request came from
+                        */
+                        static size_t worker(Protocol& protocol, void *&buffer, size_t &bufferLength, size_t &bufferSize, eprosima::rpc::transport::Endpoint *endpoint);
+                        
+                        $definitions; separator="\n"$
+                        
+                        // Server
+                        eprosima::rpc::transport::HttpMessage processRequest(eprosima::rpc::transport::HttpMessage &httpMessage);
+                        
+                    private:
+                    
+                    	static int deserializeContentLength(char* buffer);
+                    	
+                    	static bool isNumeric(string&& myString);
+                    
+                };
+            } // namespace rest
+        } // namespace protocol
+    } // namespace rpc
+} // namespace eprosima
+
+#endif // _$ctx.filename;format="toUpper"$_REST_PROTOCOL_H_
+>>
+
+
+module(ctx, parent, module, definition_list) ::= <<
+$definition_list$
+
+>>
+
+definition_list(definitions) ::= <<
+$definitions; separator="\n"$
+
+>>
+
+interface(ctx, parent, interface, export_list) ::= <<
+$export_list$
+>>
+
+export_list(exports) ::= <<
+$exports; separator="\n"$
+
+>>
+
+exception(ctx, parent, exception) ::= <<>>
+
+operation(ctx, parent, operation, param_list) ::= <<
+/*!
+ * @brief This method implements the server part of the protocol for the operation $operation.name$
+ */
+eprosima::rpc::transport::HttpMessage deserialize_$operation.parent.name$_$operation.name$(RESTSerializer &restSerializer, eprosima::rpc::transport::HttpMessage &httpMessage);
+
+$if(operation.parent.pathHasBrackets)$
+/*!
+ * @brief This method deserializes the path and fills an structure that will contain every embedded parameter in the path
+ */
+void deserializePath_$operation.name$(RESTSerializer &restSerializer, $paramDeclsByRef(params=first(operation.parameters))$);
+$endif$
+
+$if(operation.parent.pathHasBrackets)$
+/*!
+ * @brief This method fills the path with the content of a structure containing every embedded parameter
+ */
+std::string expandPath_$operation.name$(std::string &&path, $paramRetType(typecode=first(operation.parameters).typecode)$ $first(operation.parameters).name$);
+$endif$
+/*!
+ * @brief This method implements the proxy part of the protocol for the operation $operation.name$
+ */
+$paramRetType(operation.rettype)$ $operation.parent.formatedScopedname$_$operation.name$($paramDeclarations(params=operation.parameters)$);
+
+>>
+
+param_list(parameters) ::= <<>>
+
+param(parameter) ::= <<>>
+
+const_decl(ctx, parent, const) ::= <<>>
+
+typedef_decl(ctx, parent, typedefs) ::= <<>>
+
+struct_type(ctx, parent, struct) ::= <<>>
+
+union_type(ctx, parent, union) ::= <<>>
+
+enum_type(ctx, parent, enum) ::= <<>>
